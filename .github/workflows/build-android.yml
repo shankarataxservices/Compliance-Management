@@ -1,0 +1,135 @@
+# .github/workflows/build-android.yml
+# PURPOSE: Build Android APK with caching
+# RUN: Manually trigger from Actions tab
+
+name: 📱 Build Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'apk'
+        type: choice
+        options:
+          - apk
+          - appbundle
+      build_mode:
+        description: 'Build mode'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - release
+          - debug
+          - profile
+
+env:
+  FLUTTER_VERSION: '3.19.0'
+  JAVA_VERSION: '17'
+
+jobs:
+  build:
+    name: Build Android
+    runs-on: ubuntu-latest
+    
+    steps:
+      # ========== CHECKOUT ==========
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      # ========== SETUP JAVA WITH GRADLE CACHE ==========
+      - name: ☕ Setup Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'gradle'
+
+      # ========== SETUP FLUTTER WITH CACHE ==========
+      - name: 🐦 Setup Flutter ${{ env.FLUTTER_VERSION }}
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+          cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:'
+          cache-path: '${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:'
+
+      # ========== CACHE PUB PACKAGES ==========
+      - name: 📦 Cache Pub Packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            ${{ github.workspace }}/.dart_tool
+          key: pub-${{ runner.os }}-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            pub-${{ runner.os }}-
+
+      # ========== CACHE ANDROID BUILD ==========
+      - name: 🤖 Cache Android Build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.android/cache
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            android/.gradle
+            build/
+          key: android-${{ runner.os }}-${{ hashFiles('**/build.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            android-${{ runner.os }}-
+
+      # ========== GET DEPENDENCIES ==========
+      - name: 📦 Get Dependencies
+        run: flutter pub get
+
+      # ========== BUILD APK OR APPBUNDLE ==========
+      - name: 🔨 Build ${{ github.event.inputs.build_type }} (${{ github.event.inputs.build_mode }})
+        run: |
+          if [ "${{ github.event.inputs.build_type }}" = "appbundle" ]; then
+            flutter build appbundle --${{ github.event.inputs.build_mode }}
+          else
+            flutter build apk --${{ github.event.inputs.build_mode }}
+          fi
+
+      # ========== UPLOAD APK ==========
+      - name: 📤 Upload APK
+        if: github.event.inputs.build_type == 'apk'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk-${{ github.event.inputs.build_mode }}-${{ github.run_number }}
+          path: build/app/outputs/flutter-apk/*.apk
+          retention-days: 30
+
+      # ========== UPLOAD APP BUNDLE ==========
+      - name: 📤 Upload App Bundle
+        if: github.event.inputs.build_type == 'appbundle'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-aab-${{ github.event.inputs.build_mode }}-${{ github.run_number }}
+          path: build/app/outputs/bundle/*/*.aab
+          retention-days: 30
+
+      # ========== BUILD SUMMARY ==========
+      - name: 📋 Build Summary
+        run: |
+          echo "========================================="
+          echo "✅ BUILD COMPLETE!"
+          echo "========================================="
+          echo ""
+          echo "Build type: ${{ github.event.inputs.build_type }}"
+          echo "Build mode: ${{ github.event.inputs.build_mode }}"
+          echo ""
+          if [ "${{ github.event.inputs.build_type }}" = "appbundle" ]; then
+            echo "App Bundle location: build/app/outputs/bundle/"
+            ls -la build/app/outputs/bundle/*/ || true
+          else
+            echo "APK location: build/app/outputs/flutter-apk/"
+            ls -la build/app/outputs/flutter-apk/ || true
+          fi
+          echo ""
+          echo "Download from: Artifacts section above ⬆️"
+          echo "========================================="
