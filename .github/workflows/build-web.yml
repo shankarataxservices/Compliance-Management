@@ -1,0 +1,100 @@
+# .github/workflows/build-web.yml
+# PURPOSE: Build Flutter Web
+# RUN: Manually trigger from Actions tab
+
+name: 🌐 Build Web
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_mode:
+        description: 'Build mode'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - release
+          - profile
+      web_renderer:
+        description: 'Web renderer'
+        required: true
+        default: 'canvaskit'
+        type: choice
+        options:
+          - canvaskit
+          - html
+          - auto
+
+env:
+  FLUTTER_VERSION: '3.19.0'
+
+jobs:
+  build:
+    name: Build Web
+    runs-on: ubuntu-latest
+    
+    steps:
+      # ========== CHECKOUT ==========
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      # ========== SETUP FLUTTER WITH CACHE ==========
+      - name: 🐦 Setup Flutter ${{ env.FLUTTER_VERSION }}
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+          cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:'
+          cache-path: '${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:'
+
+      # ========== CACHE PUB PACKAGES ==========
+      - name: 📦 Cache Pub Packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            ${{ github.workspace }}/.dart_tool
+          key: pub-${{ runner.os }}-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            pub-${{ runner.os }}-
+
+      # ========== GET DEPENDENCIES ==========
+      - name: 📦 Get Dependencies
+        run: flutter pub get
+
+      # ========== BUILD WEB ==========
+      - name: 🔨 Build Web (${{ github.event.inputs.build_mode }})
+        run: |
+          flutter build web \
+            --${{ github.event.inputs.build_mode }} \
+            --web-renderer=${{ github.event.inputs.web_renderer }}
+
+      # ========== UPLOAD WEB BUILD ==========
+      - name: 📤 Upload Web Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build-${{ github.event.inputs.build_mode }}-${{ github.run_number }}
+          path: build/web
+          retention-days: 30
+
+      # ========== BUILD SUMMARY ==========
+      - name: 📋 Build Summary
+        run: |
+          echo "========================================="
+          echo "✅ WEB BUILD COMPLETE!"
+          echo "========================================="
+          echo ""
+          echo "Build mode: ${{ github.event.inputs.build_mode }}"
+          echo "Web renderer: ${{ github.event.inputs.web_renderer }}"
+          echo ""
+          echo "Output: build/web/"
+          ls -la build/web/
+          echo ""
+          echo "Download from: Artifacts section above ⬆️"
+          echo ""
+          echo "To deploy:"
+          echo "1. Download artifact"
+          echo "2. Extract and upload to hosting"
+          echo "   OR run 'Deploy to Firebase' workflow"
+          echo "========================================="
