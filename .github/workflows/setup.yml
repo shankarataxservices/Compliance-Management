@@ -431,4 +431,292 @@ jobs:
                       ],
                     ),
                   ),
-                
+                ),
+              );
+            }
+          }
+          EOF
+
+          # Firebase options placeholder
+          cat > lib/firebase_options.dart << 'EOF'
+          // TODO: Run 'flutterfire configure' locally to generate this file
+          // This is a placeholder - replace with auto-generated file
+          
+          import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
+          import 'package:flutter/foundation.dart'
+              show defaultTargetPlatform, kIsWeb, TargetPlatform;
+
+          class DefaultFirebaseOptions {
+            static FirebaseOptions get currentPlatform {
+              if (kIsWeb) {
+                return web;
+              }
+              switch (defaultTargetPlatform) {
+                case TargetPlatform.android:
+                  return android;
+                case TargetPlatform.iOS:
+                  return ios;
+                default:
+                  throw UnsupportedError('Unsupported platform');
+              }
+            }
+
+            // TODO: Replace with your Firebase config
+            static const FirebaseOptions web = FirebaseOptions(
+              apiKey: 'AIzaSyCnWS-V96J6YDBVYKOeL5p8aa45GPTdSEg',
+              appId: '1:4348274796:web:a9e1720c2ae223035bd049',
+              messagingSenderId: '4348274796',
+              projectId: 'compliance-management-484405',
+              authDomain: 'compliance-management-484405.firebaseapp.com',
+              storageBucket: 'compliance-management-484405.firebasestorage.app',
+            );
+
+            static const FirebaseOptions android = FirebaseOptions(
+              apiKey: 'YOUR_ANDROID_API_KEY',
+              appId: 'YOUR_ANDROID_APP_ID',
+              messagingSenderId: '4348274796',
+              projectId: 'compliance-management-484405',
+              storageBucket: 'compliance-management-484405.firebasestorage.app',
+            );
+
+            static const FirebaseOptions ios = FirebaseOptions(
+              apiKey: 'YOUR_IOS_API_KEY',
+              appId: 'YOUR_IOS_APP_ID',
+              messagingSenderId: '4348274796',
+              projectId: 'compliance-management-484405',
+              storageBucket: 'compliance-management-484405.firebasestorage.app',
+              iosBundleId: 'com.compliancemanagement.complianceApp',
+            );
+          }
+          EOF
+
+          # Utils placeholder
+          cat > lib/utils/date_helpers.dart << 'EOF'
+          import 'package:intl/intl.dart';
+
+          class DateHelpers {
+            static const String istTimeZone = 'Asia/Kolkata';
+            
+            /// Get today's date in YYYY-MM-DD format (IST)
+            static String todayYmdIST() {
+              final now = DateTime.now().toUtc().add(const Duration(hours: 5, minutes: 30));
+              return DateFormat('yyyy-MM-dd').format(now);
+            }
+            
+            /// Convert DD-MM-YYYY to YYYY-MM-DD
+            static String dmyToYmd(String dmy) {
+              final parts = dmy.split('-');
+              if (parts.length != 3) throw FormatException('Invalid date: $dmy');
+              return '${parts[2]}-${parts[1]}-${parts[0]}';
+            }
+            
+            /// Convert YYYY-MM-DD to DD-MM-YYYY
+            static String ymdToDmy(String ymd) {
+              final parts = ymd.split('-');
+              if (parts.length != 3) return '';
+              return '${parts[2]}-${parts[1]}-${parts[0]}';
+            }
+            
+            /// Calculate days between two dates
+            static int dateDiffDays(String fromYmd, String toYmd) {
+              final from = DateTime.parse(fromYmd);
+              final to = DateTime.parse(toYmd);
+              return to.difference(from).inDays;
+            }
+            
+            /// Format date for display
+            static String formatDisplay(String ymd) {
+              try {
+                final date = DateTime.parse(ymd);
+                return DateFormat('d MMM yyyy').format(date);
+              } catch (_) {
+                return ymd;
+              }
+            }
+          }
+          EOF
+
+          cat > lib/utils/constants.dart << 'EOF'
+          class AppConstants {
+            // Task Statuses
+            static const List<String> taskStatuses = [
+              'PENDING',
+              'IN_PROGRESS',
+              'CLIENT_PENDING',
+              'APPROVAL_PENDING',
+              'COMPLETED',
+            ];
+            
+            // Categories
+            static const List<String> categories = [
+              'GST',
+              'TDS',
+              'INCOME_TAX',
+              'ROC',
+              'ACCOUNTING',
+              'AUDIT',
+              'OTHER',
+            ];
+            
+            // Recurrence
+            static const List<String> recurrenceTypes = [
+              'AD_HOC',
+              'DAILY',
+              'WEEKLY',
+              'BIWEEKLY',
+              'MONTHLY',
+              'BIMONTHLY',
+              'QUARTERLY',
+              'HALF_YEARLY',
+              'YEARLY',
+            ];
+            
+            // Roles
+            static const List<String> userRoles = [
+              'PARTNER',
+              'MANAGER',
+              'WORKER',
+            ];
+          }
+          EOF
+
+          # Create placeholder icon
+          mkdir -p assets/icon
+          cat > assets/icon/.gitkeep << 'EOF'
+          # Add app_icon.png (1024x1024) here
+          EOF
+
+          cat > assets/images/.gitkeep << 'EOF'
+          # Add images here
+          EOF
+
+          cat > assets/fonts/.gitkeep << 'EOF'
+          # Add Inter font files here
+          # Download from: https://fonts.google.com/specimen/Inter
+          EOF
+
+          echo "✅ Placeholder files created!"
+
+      # ========== CREATE README ==========
+      - name: 📖 Create README
+        run: |
+          cat > README.md << 'EOF'
+          # Compliance Management App
+
+          Flutter app for Compliance Management System.
+
+          ## Platforms
+          - ✅ Android
+          - ✅ iOS
+          - ✅ Web
+
+          ## Setup
+
+          ### 1. Firebase Configuration
+          ```bash
+          # Install FlutterFire CLI
+          dart pub global activate flutterfire_cli
+
+          # Configure (run locally)
+          flutterfire configure --project=compliance-management-484405
+          ```
+
+          ### 2. Update API URL
+          Edit `lib/config/api_config.dart` and replace with your Netlify URL.
+
+          ### 3. Add Assets
+          - Add `app_icon.png` (1024x1024) to `assets/icon/`
+          - Add Inter font files to `assets/fonts/`
+
+          ## Build
+
+          ### Android APK
+          ```bash
+          flutter build apk --release
+          ```
+
+          ### Web
+          ```bash
+          flutter build web
+          ```
+
+          ### iOS
+          ```bash
+          flutter build ios --release
+          ```
+
+          ## GitHub Actions
+
+          - **Build Android**: Manually trigger to build APK
+          - **Build Web**: Manually trigger to build web
+          - **Deploy Firebase**: Deploy web to Firebase Hosting
+
+          ## Architecture
+
+          ```
+          lib/
+          ├── config/      # API, Theme, Routes
+          ├── models/      # Data models
+          ├── services/    # API, Auth, Firestore
+          ├── providers/   # State management (Riverpod)
+          ├── screens/     # UI screens
+          ├── widgets/     # Reusable widgets
+          └── utils/       # Helpers, constants
+          ```
+          EOF
+
+      # ========== CREATE .GITIGNORE ==========
+      - name: 🙈 Update .gitignore
+        run: |
+          cat >> .gitignore << 'EOF'
+
+          # Additional ignores
+          *.jks
+          *.keystore
+          key.properties
+          google-services.json
+          GoogleService-Info.plist
+          firebase_options.dart
+
+          # Build outputs
+          *.apk
+          *.aab
+          *.ipa
+          EOF
+
+      # ========== GET DEPENDENCIES ==========
+      - name: 📦 Get Dependencies
+        run: flutter pub get
+
+      # ========== COMMIT AND PUSH ==========
+      - name: 💾 Commit and Push
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add -A
+          git commit -m "🚀 Initial Flutter project setup
+
+          - Created Flutter project with Android, iOS, Web support
+          - Added all required dependencies
+          - Created folder structure
+          - Added placeholder files
+          - Ready for development!"
+          git push
+
+      # ========== SUMMARY ==========
+      - name: 📋 Summary
+        run: |
+          echo "========================================="
+          echo "✅ SETUP COMPLETE!"
+          echo "========================================="
+          echo ""
+          echo "Next steps:"
+          echo "1. Clone repo locally"
+          echo "2. Run: flutterfire configure --project=compliance-management-484405"
+          echo "3. Add app icon to assets/icon/app_icon.png"
+          echo "4. Update lib/config/api_config.dart with your Netlify URL"
+          echo "5. Start adding screens and logic!"
+          echo ""
+          echo "To build APK: Run 'Build Android APK' workflow"
+          echo "To build Web: Run 'Build Web' workflow"
+          echo "========================================="
