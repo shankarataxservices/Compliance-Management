@@ -30,8 +30,8 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCnWS-V96J6YDBVYKOeL5p8aa45GPTdSEg',
-    appId: '1:4348274796:android:YOUR_ANDROID_APP_ID',
+    apiKey: 'AIzaSyDz8WIRu6CmVzXmL9ED9xkiA3QHuso4sHA',
+    appId: '1:4348274796:android:79b878a042e1912c5bd049',
     messagingSenderId: '4348274796',
     projectId: 'compliance-management-484405',
     storageBucket: 'compliance-management-484405.firebasestorage.app',
