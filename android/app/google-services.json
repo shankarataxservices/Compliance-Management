@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "4348274796",
+    "project_id": "compliance-management-484405",
+    "storage_bucket": "compliance-management-484405.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:4348274796:android:79b878a042e1912c5bd049",
+        "android_client_info": {
+          "package_name": "com.compliancemanagement.compliance_management"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "4348274796-v4ikokm7psilnf7spgocit3f76f519im.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDz8WIRu6CmVzXmL9ED9xkiA3QHuso4sHA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "4348274796-v4ikokm7psilnf7spgocit3f76f519im.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
