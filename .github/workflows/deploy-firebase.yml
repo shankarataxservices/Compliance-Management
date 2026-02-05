@@ -1,0 +1,161 @@
+# .github/workflows/deploy-firebase.yml
+# PURPOSE: Deploy Flutter Web to Firebase Hosting
+# RUN: Manually trigger from Actions tab
+# REQUIRES: FIREBASE_SERVICE_ACCOUNT secret
+
+name: 🚀 Deploy to Firebase Hosting
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: 'Deploy channel'
+        required: true
+        default: 'live'
+        type: choice
+        options:
+          - live
+          - preview
+      web_renderer:
+        description: 'Web renderer'
+        required: true
+        default: 'canvaskit'
+        type: choice
+        options:
+          - canvaskit
+          - html
+          - auto
+
+env:
+  FLUTTER_VERSION: '3.19.0'
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    
+    steps:
+      # ========== CHECKOUT ==========
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      # ========== SETUP FLUTTER WITH CACHE ==========
+      - name: 🐦 Setup Flutter ${{ env.FLUTTER_VERSION }}
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+          cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:'
+          cache-path: '${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:'
+
+      # ========== CACHE PUB PACKAGES ==========
+      - name: 📦 Cache Pub Packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            ${{ github.workspace }}/.dart_tool
+          key: pub-${{ runner.os }}-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            pub-${{ runner.os }}-
+
+      # ========== GET DEPENDENCIES ==========
+      - name: 📦 Get Dependencies
+        run: flutter pub get
+
+      # ========== BUILD WEB ==========
+      - name: 🔨 Build Web (Release)
+        run: |
+          flutter build web \
+            --release \
+            --web-renderer=${{ github.event.inputs.web_renderer }}
+
+      # ========== CREATE FIREBASE CONFIG ==========
+      - name: 🔥 Create firebase.json
+        run: |
+          cat > firebase.json << 'EOF'
+          {
+            "hosting": {
+              "public": "build/web",
+              "ignore": [
+                "firebase.json",
+                "**/.*",
+                "**/node_modules/**"
+              ],
+              "rewrites": [
+                {
+                  "source": "**",
+                  "destination": "/index.html"
+                }
+              ],
+              "headers": [
+                {
+                  "source": "**/*.@(js|css)",
+                  "headers": [
+                    {
+                      "key": "Cache-Control",
+                      "value": "max-age=31536000"
+                    }
+                  ]
+                },
+                {
+                  "source": "**/*.@(jpg|jpeg|gif|png|svg|webp|ico)",
+                  "headers": [
+                    {
+                      "key": "Cache-Control",
+                      "value": "max-age=31536000"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+          EOF
+
+          cat > .firebaserc << 'EOF'
+          {
+            "projects": {
+              "default": "compliance-management-484405"
+            }
+          }
+          EOF
+
+      # ========== DEPLOY TO FIREBASE (LIVE) ==========
+      - name: 🚀 Deploy to Firebase Hosting (Live)
+        if: github.event.inputs.channel == 'live'
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          projectId: 'compliance-management-484405'
+          channelId: live
+
+      # ========== DEPLOY TO FIREBASE (PREVIEW) ==========
+      - name: 🚀 Deploy to Firebase Hosting (Preview)
+        if: github.event.inputs.channel == 'preview'
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          projectId: 'compliance-management-484405'
+
+      # ========== DEPLOYMENT SUMMARY ==========
+      - name: 📋 Deployment Summary
+        run: |
+          echo "========================================="
+          echo "✅ DEPLOYMENT COMPLETE!"
+          echo "========================================="
+          echo ""
+          echo "Channel: ${{ github.event.inputs.channel }}"
+          echo "Project: compliance-management-484405"
+          echo ""
+          if [ "${{ github.event.inputs.channel }}" = "live" ]; then
+            echo "🌐 Live URL:"
+            echo "   https://compliance-management-484405.web.app"
+            echo "   https://compliance-management-484405.firebaseapp.com"
+          else
+            echo "🔗 Preview URL: Check workflow output above ⬆️"
+          fi
+          echo ""
+          echo "========================================="
