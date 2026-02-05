@@ -1,0 +1,81 @@
+name: compliance_management
+description: Compliance Management System - Tasks, Calendar, Mail Automation
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Firebase
+  firebase_core: ^2.25.0
+  firebase_auth: ^4.17.0
+  cloud_firestore: ^4.15.0
+  firebase_messaging: ^14.7.0
+  firebase_storage: ^11.6.0
+  
+  # State Management
+  flutter_riverpod: ^2.4.10
+  
+  # HTTP & API
+  dio: ^5.4.1
+  
+  # UI Components
+  flutter_svg: ^2.0.10
+  cached_network_image: ^3.3.1
+  shimmer: ^3.0.0
+  google_fonts: ^6.1.0
+  
+  # Calendar
+  table_calendar: ^3.0.9
+  
+  # Charts
+  fl_chart: ^0.66.2
+  
+  # File Handling
+  file_picker: ^6.1.1
+  open_file: ^3.3.2
+  path_provider: ^2.1.2
+  
+  # Local Storage
+  shared_preferences: ^2.2.2
+  
+  # Utils
+  intl: ^0.18.1
+  url_launcher: ^6.2.4
+  package_info_plus: ^5.0.1
+  connectivity_plus: ^5.0.2
+  
+  # Biometric Auth
+  local_auth: ^2.1.8
+  
+  # Icons
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  flutter_launcher_icons: ^0.13.1
+  build_runner: ^2.4.8
+
+# App Icon Configuration
+flutter_launcher_icons:
+  android: true
+  ios: true
+  web:
+    generate: true
+  image_path: "assets/icon/app_icon.png"
+  adaptive_icon_background: "#0078D4"
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/icon/
+
